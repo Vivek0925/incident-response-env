@@ -1,0 +1,42 @@
+from fastapi import FastAPI
+from pydantic import BaseModel
+
+from env.incident_env import IncidentEnv
+
+app = FastAPI()
+
+env = IncidentEnv()
+
+
+class StepRequest(BaseModel):
+    action: str
+
+
+@app.post("/reset")
+def reset_env(difficulty: str = "easy"):
+
+    state = env.reset(difficulty)
+
+    return {
+        "state": state
+    }
+
+
+@app.post("/step")
+def step_env(request: StepRequest):
+
+    state, reward, done, info = env.step(request.action)
+
+    return {
+        "state": state,
+        "reward": reward,
+        "done": done
+    }
+
+
+@app.get("/state")
+def get_state():
+
+    return {
+        "state": env.get_state()
+    }

@@ -1,18 +1,30 @@
 from env.incident_env import IncidentEnv
-from grader.grader import evaluate
 
 env = IncidentEnv()
 
-state = env.reset()
-
-print("Initial State:", state)
+# EASY TASK
+print("===== EASY TASK =====")
+state = env.reset("easy")
+print("Initial:", state)
 
 state, reward, done, _ = env.step("scale_servers")
-print("After scaling:", state)
+print("After scale:", state)
 
 state, reward, done, _ = env.step("restart_service")
 print("After restart:", state)
 
-score = evaluate(state)
+# MEDIUM TASK
+print("\n===== MEDIUM TASK =====")
+state = env.reset("medium")
+print("Initial:", state)
 
-print("Final Score:", score)
+state, reward, done, _ = env.step("restart_service")
+print("After restart:", state)
+
+# HARD TASK
+print("\n===== HARD TASK =====")
+state = env.reset("hard")
+print("Initial:", state)
+
+state, reward, done, _ = env.step("restart_service")
+print("After restart:", state)
