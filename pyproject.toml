@@ -1,0 +1,17 @@
+[project]
+name = "incident-response-env"
+version = "0.1.0"
+description = "AI DevOps Incident Response Environment for OpenEnv Hackathon"
+requires-python = ">=3.10"
+
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "pydantic",
+    "openenv-core",
+    "requests"
+]
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
