@@ -1,7 +1,7 @@
 [project]
 name = "incident-response-env"
 version = "0.1.0"
-description = "AI DevOps Incident Response Environment for OpenEnv Hackathon"
+description = "AI DevOps Incident Response Environment"
 requires-python = ">=3.10"
 
 dependencies = [
@@ -11,6 +11,9 @@ dependencies = [
     "openenv-core",
     "requests"
 ]
+
+[project.scripts]
+server = "server.app:main"
 
 [build-system]
 requires = ["setuptools", "wheel"]
