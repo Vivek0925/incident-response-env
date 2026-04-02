@@ -1,13 +1,16 @@
-# 🚑 AI DevOps Incident Response Environment
-
-> A reinforcement learning environment for training autonomous agents to diagnose and resolve production infrastructure incidents — modeled on real SRE workflows.
-
-[![Python](https://img.shields.io/badge/Python-3.9%2B-blue)](https://python.org)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.100%2B-009688)](https://fastapi.tiangolo.com)
-[![OpenEnv](https://img.shields.io/badge/OpenEnv-Compatible-red)](https://huggingface.co)
-[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
-
 ---
+title: Incident Response Env
+emoji: ⚡
+colorFrom: purple
+colorTo: blue
+sdk: docker
+pinned: false
+---
+
+# AI DevOps Incident Response Environment
+
+This environment simulates real-world DevOps incidents such as traffic spikes,
+memory leaks, database overload, and failed deployments.
 
 ## Why This Environment
 
