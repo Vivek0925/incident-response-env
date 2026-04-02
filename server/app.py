@@ -12,6 +12,11 @@ class StepRequest(BaseModel):
     action: str
 
 
+@app.get("/")
+def root():
+    return {"message": "Incident Response Environment running. Visit /docs for API."}
+
+
 @app.post("/reset")
 def reset_env(difficulty: str = "easy"):
 
