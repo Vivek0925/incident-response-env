@@ -24,25 +24,23 @@ VALID_ACTIONS = [
     "ignore_alert"
 ]
 
-# safe request helper
 def safe_post(url, payload=None):
     try:
         r = requests.post(url, json=payload, timeout=10)
+        r.raise_for_status()          # catch 4xx / 5xx before .json()
         return r.json()
-    except Exception:
+    except (requests.RequestException, ValueError, KeyError):
         return None
 
 
-# reset environment safely
 reset_data = safe_post(f"{ENV_URL}/reset?difficulty=easy")
 
 if not reset_data or "state" not in reset_data:
-    print("[ERROR] reset failed")
+    print("[ERROR] reset failed, exiting cleanly")
     print("[END]")
     exit(0)
 
 state = reset_data["state"]
-
 done = False
 steps = 0
 
@@ -63,28 +61,25 @@ while not done and steps < 10:
             ],
             max_tokens=20
         )
+        action = response.choices[0].message.content.strip().lower()
 
-        action = response.choices[0].message.content.strip()
-
-    except Exception:
+    except Exception as e:
+        print(f"[LLM ERROR] {e}")
         action = "restart_service"
 
     if action not in VALID_ACTIONS:
         action = "restart_service"
 
-    step_data = safe_post(
-        f"{ENV_URL}/step",
-        {"action": action}
-    )
+    step_data = safe_post(f"{ENV_URL}/step", {"action": action})
 
     if not step_data:
+        print("[WARN] step returned no data, breaking")
         break
 
     print("[STEP]", step_data)
 
     state = step_data.get("state", state)
     done = step_data.get("done", False)
-
     steps += 1
 
 print("[END]")
