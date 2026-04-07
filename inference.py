@@ -6,11 +6,11 @@ print("[START]")
 
 API_BASE_URL = os.getenv("API_BASE_URL", "https://api.openai.com/v1")
 MODEL_NAME = os.getenv("MODEL_NAME", "gpt-4o-mini")
-HF_TOKEN = os.getenv("HF_TOKEN")
+API_KEY = os.getenv("API_KEY")
 
 client = OpenAI(
     base_url=API_BASE_URL,
-    api_key=HF_TOKEN
+    api_key=API_KEY
 )
 
 ENV_URL = os.getenv("ENV_URL", "http://127.0.0.1:8000")
@@ -27,7 +27,7 @@ VALID_ACTIONS = [
 def safe_post(url, payload=None):
     try:
         r = requests.post(url, json=payload, timeout=10)
-        r.raise_for_status()          # catch 4xx / 5xx before .json()
+        r.raise_for_status()
         return r.json()
     except (requests.RequestException, ValueError, KeyError):
         return None
