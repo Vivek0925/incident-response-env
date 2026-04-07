@@ -18,13 +18,9 @@ def root():
 
 
 @app.post("/reset")
-def reset_env(difficulty: str = "easy"):
-
+def reset(difficulty: str = "easy"):
     state = env.reset(difficulty)
-
-    return {
-        "state": state
-    }
+    return {"state": state}
 
 
 @app.post("/step")
