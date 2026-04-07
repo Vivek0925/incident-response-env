@@ -4,18 +4,15 @@ from openai import OpenAI
 
 print("[START]")
 
-# Required environment variables
 API_BASE_URL = os.getenv("API_BASE_URL", "https://api.openai.com/v1")
 MODEL_NAME = os.getenv("MODEL_NAME", "gpt-4o-mini")
 HF_TOKEN = os.getenv("HF_TOKEN")
 
-# OpenAI client
 client = OpenAI(
     base_url=API_BASE_URL,
     api_key=HF_TOKEN
 )
 
-# Environment URL (local default)
 ENV_URL = os.getenv("ENV_URL", "http://127.0.0.1:8000")
 
 VALID_ACTIONS = [
@@ -27,9 +24,24 @@ VALID_ACTIONS = [
     "ignore_alert"
 ]
 
-# Reset environment
-r = requests.post(f"{ENV_URL}/reset?difficulty=easy")
-state = r.json()["state"]
+# safe request helper
+def safe_post(url, payload=None):
+    try:
+        r = requests.post(url, json=payload, timeout=10)
+        return r.json()
+    except Exception:
+        return None
+
+
+# reset environment safely
+reset_data = safe_post(f"{ENV_URL}/reset?difficulty=easy")
+
+if not reset_data or "state" not in reset_data:
+    print("[ERROR] reset failed")
+    print("[END]")
+    exit(0)
+
+state = reset_data["state"]
 
 done = False
 steps = 0
@@ -37,25 +49,16 @@ steps = 0
 while not done and steps < 10:
 
     try:
-        # Ask LLM for action
         response = client.chat.completions.create(
             model=MODEL_NAME,
             messages=[
                 {
                     "role": "system",
-                    "content": "You are a DevOps incident response agent. Respond with ONLY the action name."
+                    "content": "You are a DevOps incident response agent. Respond with only the action name."
                 },
                 {
                     "role": "user",
-                    "content": f"""
-Current system state:
-{state}
-
-Choose one action from:
-{', '.join(VALID_ACTIONS)}
-
-Respond with only the action name.
-"""
+                    "content": f"Current state: {state}\nChoose one action from: {', '.join(VALID_ACTIONS)}"
                 }
             ],
             max_tokens=20
@@ -64,24 +67,24 @@ Respond with only the action name.
         action = response.choices[0].message.content.strip()
 
     except Exception:
-        # fallback if LLM call fails
         action = "restart_service"
 
-    # sanitize action
     if action not in VALID_ACTIONS:
         action = "restart_service"
 
-    r = requests.post(
+    step_data = safe_post(
         f"{ENV_URL}/step",
-        json={"action": action}
+        {"action": action}
     )
 
-    data = r.json()
+    if not step_data:
+        break
 
-    print("[STEP]", data)
+    print("[STEP]", step_data)
 
-    state = data.get("state", state)
-    done = data["done"]
+    state = step_data.get("state", state)
+    done = step_data.get("done", False)
+
     steps += 1
 
 print("[END]")
