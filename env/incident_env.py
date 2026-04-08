@@ -130,6 +130,9 @@ class IncidentEnv:
 
         reward = grade_incident(self.state)
 
+# validator safety clamp
+        reward = max(0.01, min(reward, 0.99))
+
         return self.state, reward, self.done
 
     def get_state(self):
