@@ -6,11 +6,14 @@ app: server.app:app
 port: 8000
 
 tasks:
-  - id: traffic_spike_resolution
+  - id: traffic_spike
+    description: Resolve traffic spike incident
     grader: tasks.graders:grade_traffic_spike
 
-  - id: database_overload_resolution
+  - id: database_overload
+    description: Resolve database overload incident
     grader: tasks.graders:grade_database_overload
 
-  - id: failed_deployment_resolution
+  - id: failed_deployment
+    description: Resolve failed deployment incident
     grader: tasks.graders:grade_failed_deployment

@@ -96,7 +96,6 @@ def grade_failed_deployment(state):
 
 
 def grade_incident(state):
-    """Generic grader — routes to the correct grader by incident type."""
     incident = state.get("incident", "traffic_spike")
 
     if incident == "traffic_spike":
