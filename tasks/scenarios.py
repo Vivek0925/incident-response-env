@@ -1,3 +1,9 @@
+from tasks.graders import (
+    grade_traffic_spike,
+    grade_database_overload,
+    grade_failed_deployment
+)
+
 easy_task = {
     "id": "traffic_spike",
     "difficulty": "easy",
@@ -9,7 +15,8 @@ easy_task = {
         "network_errors": 5,
         "error_rate": 8,
         "servers": 3
-    }
+    },
+    "grader": grade_traffic_spike
 }
 
 medium_task = {
@@ -23,7 +30,8 @@ medium_task = {
         "network_errors": 8,
         "error_rate": 12,
         "servers": 3
-    }
+    },
+    "grader": grade_database_overload
 }
 
 hard_task = {
@@ -37,7 +45,8 @@ hard_task = {
         "network_errors": 10,
         "error_rate": 20,
         "servers": 2
-    }
+    },
+    "grader": grade_failed_deployment
 }
 
 TASKS = [easy_task, medium_task, hard_task]

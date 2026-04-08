@@ -42,6 +42,15 @@ def get_state():
         "state": env.get_state()
     }
 
+@app.get("/metrics")
+def metrics():
+    return {
+        "cpu": env.state.get("cpu_usage"),
+        "memory": env.state.get("memory_usage"),
+        "errors": env.state.get("error_rate"),
+        "incident": env.state.get("incident")
+    }
+
 
 def main():
     import uvicorn

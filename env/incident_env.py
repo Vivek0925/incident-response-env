@@ -4,9 +4,20 @@ from tasks.graders import grade_incident
 
 class IncidentEnv:
 
+    VALID_ACTIONS = [
+        "scale_servers",
+        "restart_service",
+        "restart_database",
+        "clear_cache",
+        "rollback_deployment",
+        "ignore_alert"
+    ]
+
     def __init__(self):
         self.done = False
         self.state = {}
+        self.steps = 0
+        self.max_steps = 20
 
     def reset(self, difficulty="easy"):
 
@@ -56,11 +67,19 @@ class IncidentEnv:
             }
 
         self.done = False
+        self.steps = 0
+
         return self.state
 
     def step(self, action):
 
-        # ---------------- ACTIONS ----------------
+        # ---------- INVALID ACTION CHECK ----------
+        if action not in self.VALID_ACTIONS:
+            return self.state, 0.01, False
+
+        self.steps += 1
+
+        # ---------- ACTIONS ----------
 
         if action == "scale_servers":
             self.state["servers"] += 1
@@ -85,14 +104,14 @@ class IncidentEnv:
         elif action == "ignore_alert":
             pass
 
-        # ---------------- TIME-BASED SYSTEM DRIFT ----------------
+        # ---------- SYSTEM DRIFT ----------
 
         self.state["cpu_usage"] += random.randint(0, 3)
         self.state["memory_usage"] += random.randint(0, 2)
         self.state["database_latency"] += random.randint(0, 20)
         self.state["network_errors"] += random.randint(0, 1)
 
-        # ---------------- CASCADING FAILURES ----------------
+        # ---------- CASCADING FAILURES ----------
 
         if self.state["database_latency"] > 300:
             self.state["network_errors"] += 2
@@ -104,7 +123,7 @@ class IncidentEnv:
         if self.state["memory_usage"] > 85:
             self.state["cpu_usage"] += 5
 
-        # ---------------- INCIDENT PROPAGATION ----------------
+        # ---------- INCIDENT PROPAGATION ----------
 
         if self.state["incident"] == "traffic_spike" and self.state["database_latency"] > 250:
             self.state["incident"] = "database_overload"
@@ -115,22 +134,27 @@ class IncidentEnv:
         if self.state["incident"] == "failed_deployment" and self.state["cpu_usage"] > 90:
             self.state["incident"] = "system_instability"
 
-        # ---------------- METRIC BOUNDS ----------------
+        # ---------- METRIC LIMITS ----------
 
         self.state["cpu_usage"] = min(self.state["cpu_usage"], 100)
         self.state["memory_usage"] = min(self.state["memory_usage"], 100)
         self.state["error_rate"] = min(self.state["error_rate"], 100)
 
-        # ---------------- INCIDENT RESOLUTION ----------------
+        # ---------- INCIDENT RESOLUTION ----------
 
         if self.state["error_rate"] < 2:
             self.done = True
 
-        # ---------------- GRADER (VALIDATOR REQUIREMENT) ----------------
+        if self.steps >= self.max_steps:
+            self.done = True
+
+        # ---------- REWARD ----------
 
         reward = grade_incident(self.state)
 
-# validator safety clamp
+        if self.done:
+            reward += 0.2
+
         reward = max(0.01, min(reward, 0.99))
 
         return self.state, reward, self.done

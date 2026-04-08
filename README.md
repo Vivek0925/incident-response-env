@@ -154,6 +154,10 @@ python -m uvicorn server.app:app --reload
 
 # Open API docs
 open http://127.0.0.1:8000/docs
+
+Run demo agent
+
+python agent.py
 ```
 
 ### Docker
