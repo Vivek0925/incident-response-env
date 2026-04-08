@@ -4,3 +4,13 @@ type: space
 runtime: fastapi
 app: server.app:app
 port: 8000
+
+tasks:
+  - id: traffic_spike_resolution
+    grader: tasks.graders:grade_traffic_spike
+
+  - id: database_overload_resolution
+    grader: tasks.graders:grade_database_overload
+
+  - id: failed_deployment_resolution
+    grader: tasks.graders:grade_failed_deployment
