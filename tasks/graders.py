@@ -1,15 +1,15 @@
 def _clamp(score: float) -> float:
-    """Ensure score is strictly between (0,1)."""
+    """Ensure score stays strictly between (0,1)."""
     return max(0.01, min(score, 0.99))
 
 
 def grade_traffic_spike(state, **kwargs):
-    """Grade how well a traffic spike incident was resolved."""
+    """Grade how well a traffic spike was resolved."""
     cpu_usage = state.get("cpu_usage", 100)
     servers = state.get("servers", 1)
     error_rate = state.get("error_rate", 10)
 
-    score = 0.0
+    score = 0.1  # non-zero baseline
 
     if cpu_usage < 60:
         score += 0.35
@@ -41,7 +41,7 @@ def grade_database_overload(state, **kwargs):
     network_errors = state.get("network_errors", 10)
     error_rate = state.get("error_rate", 10)
 
-    score = 0.0
+    score = 0.1  # non-zero baseline
 
     if database_latency < 50:
         score += 0.4
@@ -73,7 +73,7 @@ def grade_failed_deployment(state, **kwargs):
     memory_usage = state.get("memory_usage", 100)
     cpu_usage = state.get("cpu_usage", 100)
 
-    score = 0.0
+    score = 0.1  # non-zero baseline
 
     if error_rate == 0:
         score += 0.45
