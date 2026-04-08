@@ -9,7 +9,7 @@ def grade_traffic_spike(state, **kwargs):
     servers = state.get("servers", 1)
     error_rate = state.get("error_rate", 10)
 
-    score = 0.1  # non-zero baseline
+    score = 0.05  # non-zero baseline
 
     if cpu_usage < 60:
         score += 0.35
@@ -41,7 +41,7 @@ def grade_database_overload(state, **kwargs):
     network_errors = state.get("network_errors", 10)
     error_rate = state.get("error_rate", 10)
 
-    score = 0.1  # non-zero baseline
+    score = 0.05  # non-zero baseline
 
     if database_latency < 50:
         score += 0.4
@@ -73,7 +73,7 @@ def grade_failed_deployment(state, **kwargs):
     memory_usage = state.get("memory_usage", 100)
     cpu_usage = state.get("cpu_usage", 100)
 
-    score = 0.1  # non-zero baseline
+    score = 0.05  # non-zero baseline
 
     if error_rate == 0:
         score += 0.45
