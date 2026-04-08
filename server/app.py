@@ -26,7 +26,7 @@ def reset(difficulty: str = "easy"):
 @app.post("/step")
 def step_env(request: StepRequest):
 
-    state, reward, done, info = env.step(request.action)
+    state, reward, done = env.step(request.action)
 
     return {
         "state": state,
@@ -41,6 +41,7 @@ def get_state():
     return {
         "state": env.get_state()
     }
+
 
 def main():
     import uvicorn
