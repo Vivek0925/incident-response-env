@@ -1,4 +1,5 @@
 import random
+from tasks.graders import grade_incident
 
 
 class IncidentEnv:
@@ -59,43 +60,32 @@ class IncidentEnv:
 
     def step(self, action):
 
-        reward = 0
-
         # ---------------- ACTIONS ----------------
 
         if action == "scale_servers":
             self.state["servers"] += 1
             self.state["cpu_usage"] = max(0, self.state["cpu_usage"] - 25)
-            reward = 0.3
 
         elif action == "restart_service":
             self.state["error_rate"] = max(0, self.state["error_rate"] - 8)
-            reward = 0.5
 
         elif action == "restart_database":
             self.state["database_latency"] = max(
                 0, self.state["database_latency"] - 200)
-            reward = 0.6
 
         elif action == "clear_cache":
             self.state["memory_usage"] = max(
                 0, self.state["memory_usage"] - 30)
-            reward = 0.4
 
         elif action == "rollback_deployment":
-
             if self.state["incident"] == "failed_deployment":
                 self.state["error_rate"] = max(
                     0, self.state["error_rate"] - 15)
-                reward = 0.8
-            else:
-                reward = -0.2
 
         elif action == "ignore_alert":
-            reward = -1
+            pass
 
         # ---------------- TIME-BASED SYSTEM DRIFT ----------------
-        # infrastructure naturally degrades over time
 
         self.state["cpu_usage"] += random.randint(0, 3)
         self.state["memory_usage"] += random.randint(0, 2)
@@ -116,20 +106,14 @@ class IncidentEnv:
 
         # ---------------- INCIDENT PROPAGATION ----------------
 
-        # traffic spike → database overload
         if self.state["incident"] == "traffic_spike" and self.state["database_latency"] > 250:
             self.state["incident"] = "database_overload"
-            reward -= 0.2
 
-        # database overload → service instability
         if self.state["incident"] == "database_overload" and self.state["error_rate"] > 15:
             self.state["incident"] = "service_instability"
-            reward -= 0.3
 
-        # failed deployment → system instability
         if self.state["incident"] == "failed_deployment" and self.state["cpu_usage"] > 90:
             self.state["incident"] = "system_instability"
-            reward -= 0.4
 
         # ---------------- METRIC BOUNDS ----------------
 
@@ -141,9 +125,12 @@ class IncidentEnv:
 
         if self.state["error_rate"] < 2:
             self.done = True
-            reward += 1
 
-        return self.state, reward, self.done, {}
+        # ---------------- GRADER (VALIDATOR REQUIREMENT) ----------------
+
+        reward = grade_incident(self.state)
+
+        return self.state, reward, self.done
 
     def get_state(self):
         return self.state
