@@ -1,5 +1,6 @@
 easy_task = {
     "id": "traffic_spike",
+    "difficulty": "easy",
     "initial_state": {
         "incident": "traffic_spike",
         "cpu_usage": 95,
@@ -13,6 +14,7 @@ easy_task = {
 
 medium_task = {
     "id": "database_overload",
+    "difficulty": "medium",
     "initial_state": {
         "incident": "database_overload",
         "cpu_usage": 85,
@@ -26,6 +28,7 @@ medium_task = {
 
 hard_task = {
     "id": "failed_deployment",
+    "difficulty": "hard",
     "initial_state": {
         "incident": "failed_deployment",
         "cpu_usage": 75,
@@ -37,8 +40,4 @@ hard_task = {
     }
 }
 
-TASKS = [
-    easy_task,
-    medium_task,
-    hard_task
-]
+TASKS = [easy_task, medium_task, hard_task]
