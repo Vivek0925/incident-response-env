@@ -98,9 +98,12 @@ def grade_failed_deployment(state, **kwargs):
 
     return _clamp(score)
 
-
 def grade_incident(state, **kwargs):
-    """Route to the correct grader based on incident type."""
+    """
+    Route grading to the correct incident grader.
+    Handles cascading incidents safely.
+    """
+
     incident = state.get("incident", "traffic_spike")
 
     if incident == "traffic_spike":
@@ -112,4 +115,12 @@ def grade_incident(state, **kwargs):
     if incident == "failed_deployment":
         return grade_failed_deployment(state, **kwargs)
 
+    # cascading incidents fallback
+    if incident == "service_instability":
+        return grade_database_overload(state, **kwargs)
+
+    if incident == "system_instability":
+        return grade_failed_deployment(state, **kwargs)
+
+    # final safety fallback
     return grade_traffic_spike(state, **kwargs)
