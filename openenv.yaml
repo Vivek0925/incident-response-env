@@ -1,8 +1,8 @@
 spec_version: 1
 name: incident_response_env
-type: space
+type: env
 runtime: fastapi
 app: server.app:app
 port: 8000
-
 tasks_module: tasks.scenarios
+entry_point: env.incident_env:IncidentEnv
