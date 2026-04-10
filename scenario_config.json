@@ -1,0 +1,13 @@
+{
+    "llm_api_key": "${LLM_API_KEY}",
+    "llm_model": "gpt-4o-mini",
+    "llm_provider": "openai",
+    "user_prompt": "Resolve the incident by taking appropriate actions. Monitor metrics like CPU usage, error rate, and database latency. Scale servers when needed, restart services, and clear cache to resolve the incident.",
+    "system_prompt": "You are an AI incident responder. Your goal is to resolve incidents by taking actions: scale_servers, restart_service, restart_database, clear_cache, rollback_deployment, or ignore_alert. Monitor the state and choose actions that reduce error_rate below 2.",
+    "context": {},
+    "seed_database_file": null,
+    "verifiers": [
+        "SELECT error_rate < 2 as incident_resolved FROM state"
+    ],
+    "expected_tools": ["scale_servers", "restart_service", "restart_database", "clear_cache"]
+}
