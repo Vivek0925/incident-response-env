@@ -28,7 +28,7 @@ def run_task(difficulty):
         else:
             action = "clear_cache"
 
-        state, reward, done, _ = env.step(action)
+        state, reward, done = env.step(action)
 
         print("Action:", action)
         print("State:", state)
@@ -51,4 +51,5 @@ if __name__ == "__main__":
         score = run_task(difficulty)
         scores.append(score)
 
-    print("\nAverage score:", sum(scores) / len(scores))
+    avg = sum(scores) / len(scores)
+    print(avg)
