@@ -1,5 +1,6 @@
 easy_task = {
     "id": "traffic_spike",
+    "name": "traffic_spike",
     "difficulty": "easy",
     "grader": "tasks.graders:grade_traffic_spike",
     "initial_state": {
@@ -15,6 +16,7 @@ easy_task = {
 
 medium_task = {
     "id": "database_overload",
+    "name": "database_overload",
     "difficulty": "medium",
     "grader": "tasks.graders:grade_database_overload",
     "initial_state": {
@@ -30,6 +32,7 @@ medium_task = {
 
 hard_task = {
     "id": "failed_deployment",
+    "name": "failed_deployment",
     "difficulty": "hard",
     "grader": "tasks.graders:grade_failed_deployment",
     "initial_state": {
@@ -44,3 +47,11 @@ hard_task = {
 }
 
 TASKS = [easy_task, medium_task, hard_task]
+
+# Compatibility exports: some validators look for lowercase "tasks"
+# or a callable getter rather than uppercase "TASKS".
+tasks = TASKS
+
+
+def get_tasks():
+    return TASKS

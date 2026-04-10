@@ -1,5 +1,16 @@
 import random
-from tasks.graders import grade_incident
+
+try:
+    from tasks.graders import grade_incident
+except ModuleNotFoundError:
+    # Support direct execution: python env/incident_env.py
+    import os
+    import sys
+
+    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    if project_root not in sys.path:
+        sys.path.insert(0, project_root)
+    from tasks.graders import grade_incident
 
 
 class IncidentEnv:
@@ -71,7 +82,7 @@ class IncidentEnv:
 
         return self.state
 
-    def step(self, action):
+    def step(self, action, debug=False):
 
         # ---------- INVALID ACTION CHECK ----------
         if action not in self.VALID_ACTIONS:
@@ -150,7 +161,7 @@ class IncidentEnv:
 
         # ---------- REWARD ----------
 
-        reward = grade_incident(self.state)
+        reward = grade_incident(self.state, debug=debug)
 
         if self.done:
             reward += 0.2
@@ -161,3 +172,17 @@ class IncidentEnv:
 
     def get_state(self):
         return self.state
+
+
+if __name__ == "__main__":
+    env = IncidentEnv()
+    state = env.reset("easy")
+    print("Initial state:", state)
+
+    # Run a few deterministic-style actions so score logs are visible.
+    actions = ["scale_servers", "restart_service", "restart_database"]
+    for idx, action in enumerate(actions, start=1):
+        state, reward, done = env.step(action, debug=True)
+        print(f"step={idx} action={action} reward={reward:.4f} done={done}")
+        if done:
+            break
