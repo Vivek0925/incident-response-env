@@ -1,19 +1,12 @@
 import random
+from tasks.scenarios import TASKS
+from tasks.graders import (
+    grade_traffic_spike,
+    grade_database_overload,
+    grade_failed_deployment
+)
+
 random.seed(42)
-
-try:
-    from tasks.graders import grade_traffic_spike, grade_database_overload, grade_failed_deployment
-    from tasks.scenarios import TASKS
-except ModuleNotFoundError:
-    # Support direct execution: python env/incident_env.py
-    import os
-    import sys
-
-    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    if project_root not in sys.path:
-        sys.path.insert(0, project_root)
-    from tasks.graders import grade_traffic_spike, grade_database_overload, grade_failed_deployment
-    from tasks.scenarios import TASKS
 
 
 class IncidentEnv:
@@ -28,8 +21,8 @@ class IncidentEnv:
     ]
 
     def __init__(self):
-        self.done = False
         self.state = {}
+        self.done = False
         self.steps = 0
         self.max_steps = 20
         self.current_task_id = None
@@ -37,93 +30,72 @@ class IncidentEnv:
 
     def reset(self, task=None, difficulty=None):
         """
-        Reset the environment with a specific task.
-        
-        Args:
-            task: Can be a task dict from scenarios.py, or a task_id string
-            difficulty: Legacy parameter (kept for backward compatibility)
-        
-        Returns:
-            dict: The initial state of the environment
+        Reset environment.
+
+        Supports:
+        - task id string
+        - task dict
+        - difficulty
         """
+
         self.done = False
         self.steps = 0
-        
-        # Handle different input types that the validator might send
+
+        # difficulty fallback
         if task is None and difficulty is not None:
-            # Legacy mode: use difficulty string
+
             if difficulty == "easy":
-                task_id = "traffic_spike"
+                task = "traffic_spike"
+
             elif difficulty == "medium":
-                task_id = "database_overload"
+                task = "database_overload"
+
             elif difficulty == "hard":
-                task_id = "failed_deployment"
-            else:
-                raise ValueError("Invalid difficulty")
-            
-            # Find the task by id
-            for t in TASKS:
-                if t["id"] == task_id:
-                    task = t
-                    break
-            else:
-                raise ValueError(f"Task {task_id} not found")
-        
-        elif isinstance(task, str):
-            # Task is a string ID
+                task = "failed_deployment"
+
+        # task id string
+        if isinstance(task, str):
+
             for t in TASKS:
                 if t["id"] == task:
                     task = t
                     break
+
             else:
-                raise ValueError(f"Task {task} not found")
-        
-        elif isinstance(task, dict):
-            # Task is already a dict - use as is
-            pass
-        
-        elif task is None:
-            # Default to first task
-            task = TASKS[0]
-        
-        # Load initial state from the task
-        self.state = task["initial_state"].copy()
-        
-        # Store the grader reference and task ID for this task
-        self.current_task_id = task["id"]
-        
-        # Parse grader string (e.g., "tasks.graders:grade_traffic_spike")
-        grader_path = task["grader"]
-        grader_name = grader_path.split(":")[1]
-        
-        # Map grader name to actual function
-        grader_map = {
-            "grade_traffic_spike": grade_traffic_spike,
-            "grade_database_overload": grade_database_overload,
-            "grade_failed_deployment": grade_failed_deployment,
-        }
-        self.current_grader = grader_map.get(grader_name, grade_traffic_spike)
-        
+                task = TASKS[0]
+
+        # direct task dict
+        if isinstance(task, dict):
+            task_data = task
+
+        else:
+            task_data = TASKS[0]
+
+        self.state = task_data["initial_state"].copy()
+
+        self.current_task_id = task_data["id"]
+
+        # assign grader
+        if self.current_task_id == "traffic_spike":
+            self.current_grader = grade_traffic_spike
+
+        elif self.current_task_id == "database_overload":
+            self.current_grader = grade_database_overload
+
+        elif self.current_task_id == "failed_deployment":
+            self.current_grader = grade_failed_deployment
+
+        else:
+            self.current_grader = grade_traffic_spike
+
         return self.state
 
-    def step(self, action, debug=False):
-        """
-        Execute an action in the environment.
-        
-        Args:
-            action: One of VALID_ACTIONS
-            debug: If True, print debug information
-        
-        Returns:
-            tuple: (next_state, reward, done)
-        """
-        # ---------- INVALID ACTION CHECK ----------
+    def step(self, action):
+
         if action not in self.VALID_ACTIONS:
             return self.state, 0.01, False
 
         self.steps += 1
-
-        # ---------- ACTIONS ----------
 
         if action == "scale_servers":
             self.state["servers"] += 1
@@ -142,16 +114,13 @@ class IncidentEnv:
             if self.state["incident"] == "failed_deployment":
                 self.state["error_rate"] = max(0, self.state["error_rate"] - 15)
 
-        elif action == "ignore_alert":
-            pass
-
-        # ---------- SYSTEM DRIFT ----------
+        # system drift
         self.state["cpu_usage"] += random.randint(0, 3)
         self.state["memory_usage"] += random.randint(0, 2)
         self.state["database_latency"] += random.randint(0, 20)
         self.state["network_errors"] += random.randint(0, 1)
 
-        # ---------- CASCADING FAILURES ----------
+        # cascading failures
         if self.state["database_latency"] > 300:
             self.state["network_errors"] += 2
             self.state["error_rate"] += 1
@@ -162,66 +131,30 @@ class IncidentEnv:
         if self.state["memory_usage"] > 85:
             self.state["cpu_usage"] += 5
 
-        # ---------- INCIDENT PROPAGATION ----------
+        # incident propagation
         if self.state["incident"] == "traffic_spike" and self.state["database_latency"] > 250:
             self.state["incident"] = "database_overload"
 
-        if self.state["incident"] == "database_overload" and self.state["error_rate"] > 15:
-            self.state["incident"] = "service_instability"
+        # metric bounds
+        self.state["cpu_usage"] = min(100, self.state["cpu_usage"])
+        self.state["memory_usage"] = min(100, self.state["memory_usage"])
+        self.state["error_rate"] = min(100, self.state["error_rate"])
 
-        if self.state["incident"] == "failed_deployment" and self.state["cpu_usage"] > 90:
-            self.state["incident"] = "system_instability"
-
-        # ---------- METRIC LIMITS ----------
-        self.state["cpu_usage"] = min(self.state["cpu_usage"], 100)
-        self.state["memory_usage"] = min(self.state["memory_usage"], 100)
-        self.state["error_rate"] = min(self.state["error_rate"], 100)
-
-        # ---------- INCIDENT RESOLUTION ----------
+        # termination
         if self.state["error_rate"] < 2:
             self.done = True
 
         if self.steps >= self.max_steps:
             self.done = True
 
-        # ---------- REWARD - Use task-specific grader ----------
-        reward = self.current_grader(self.state, debug=debug)
+        reward = self.current_grader(self.state)
 
-        # Bonus for resolving incident before max steps
         if self.done:
             reward += 0.2
 
-        # Clamp reward strictly between 0 and 1
         reward = max(0.01, min(reward, 0.99))
 
         return self.state, reward, self.done
 
     def get_state(self):
-        """Return the current state."""
         return self.state
-
-
-if __name__ == "__main__":
-    env = IncidentEnv()
-    
-    # Test with task parameter (what validator expects)
-    print("=== Testing with task parameter ===")
-    state = env.reset(task="traffic_spike")
-    print(f"Initial state for task 'traffic_spike': {state}")
-    print(f"Current grader: {env.current_grader.__name__}")
-    
-    # Run a few actions
-    actions = ["scale_servers", "restart_service", "restart_database"]
-    for idx, action in enumerate(actions, start=1):
-        state, reward, done = env.step(action, debug=True)
-        print(f"step={idx} action={action} reward={reward:.4f} done={done}")
-        if done:
-            break
-    
-    print("\n=== Testing database_overload task ===")
-    state = env.reset(task="database_overload")
-    print(f"Initial database_latency: {state['database_latency']}")
-    
-    print("\n=== Testing failed_deployment task ===")
-    state = env.reset(task="failed_deployment")
-    print(f"Initial error_rate: {state['error_rate']}")
