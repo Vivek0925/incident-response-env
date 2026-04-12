@@ -155,3 +155,18 @@ def grade_incident(state, **kwargs):
     result = grade_traffic_spike(state, **kwargs)
     _log_score("grade_incident:fallback_traffic_spike", result, result, **kwargs)
     return result
+
+def grade_incident(state, **kwargs):
+    incident = state.get("incident")
+
+    if incident == "traffic_spike":
+        return grade_traffic_spike(state)
+
+    elif incident == "database_overload":
+        return grade_database_overload(state)
+
+    elif incident == "failed_deployment":
+        return grade_failed_deployment(state)
+
+    # fallback (never return 0 or 1)
+    return 0.5

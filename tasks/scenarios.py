@@ -1,8 +1,10 @@
+# tasks/scenarios.py
+
 easy_task = {
     "id": "traffic_spike",
     "name": "traffic_spike",
     "difficulty": "easy",
-    "grader": "tasks.graders:grade_traffic_spike",
+    "grader": "tasks.graders:grade_incident",  # ✅ FIXED
     "initial_state": {
         "incident": "traffic_spike",
         "cpu_usage": 95,
@@ -18,7 +20,7 @@ medium_task = {
     "id": "database_overload",
     "name": "database_overload",
     "difficulty": "medium",
-    "grader": "tasks.graders:grade_database_overload",
+    "grader": "tasks.graders:grade_incident",  # ✅ FIXED
     "initial_state": {
         "incident": "database_overload",
         "cpu_usage": 85,
@@ -34,7 +36,7 @@ hard_task = {
     "id": "failed_deployment",
     "name": "failed_deployment",
     "difficulty": "hard",
-    "grader": "tasks.graders:grade_failed_deployment",
+    "grader": "tasks.graders:grade_incident",  # ✅ FIXED
     "initial_state": {
         "incident": "failed_deployment",
         "cpu_usage": 75,
@@ -48,10 +50,15 @@ hard_task = {
 
 TASKS = [easy_task, medium_task, hard_task]
 
-# Compatibility exports: some validators look for lowercase "tasks"
-# or a callable getter rather than uppercase "TASKS".
-tasks = TASKS
-
+tasks = TASKS  # compatibility
 
 def get_tasks():
     return TASKS
+
+def load_tasks():
+    return TASKS
+
+def get_tasks():
+    return TASKS
+
+tasks = TASKS
