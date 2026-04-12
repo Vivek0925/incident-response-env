@@ -1,5 +1,5 @@
 from env.incident_env import IncidentEnv
-from tasks.graders import grade_incident
+from graders import grade_incident
 
 
 def run_task(difficulty):

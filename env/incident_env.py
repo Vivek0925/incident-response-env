@@ -1,6 +1,6 @@
 import random
-from tasks.scenarios import TASKS
-from tasks.graders import (
+from scenarios import TASKS
+from graders import (
     grade_traffic_spike,
     grade_database_overload,
     grade_failed_deployment

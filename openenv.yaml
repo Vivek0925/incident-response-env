@@ -4,4 +4,4 @@ type: env
 runtime: fastapi
 app: server.app:app
 port: 8000
-tasks_module: tasks.scenarios
+tasks_module: scenarios

@@ -1,12 +1,15 @@
 # tasks/scenarios.py
 
+from graders import grade_incident
+from graders import grade_incident
+
 def get_tasks():
     return [
         {
             "id": "traffic_spike",
             "name": "traffic_spike",
             "difficulty": "easy",
-            "grader": grade_incident,   # ✅ DIRECT FUNCTION (NO STRING)
+            "grader": grade_incident,
             "initial_state": {
                 "incident": "traffic_spike",
                 "cpu_usage": 95,
@@ -48,7 +51,3 @@ def get_tasks():
             }
         }
     ]
-
-
-# IMPORTANT: import at bottom to avoid circular issues
-from tasks.graders import grade_incident
