@@ -2,8 +2,7 @@ import os
 
 
 def _clamp(score: float) -> float:
-    """Ensure score stays strictly between (0,1)."""
-    return max(0.01, min(score, 0.99))
+    return min(max(score, 0.05), 0.95)
 
 
 def _log_score(grader_name: str, raw_score: float, final_score: float, **kwargs) -> None:
@@ -160,13 +159,12 @@ def grade_incident(state, **kwargs):
     incident = state.get("incident")
 
     if incident == "traffic_spike":
-        return grade_traffic_spike(state)
+        return _clamp(grade_traffic_spike(state))
 
     elif incident == "database_overload":
-        return grade_database_overload(state)
+        return _clamp(grade_database_overload(state))
 
     elif incident == "failed_deployment":
-        return grade_failed_deployment(state)
+        return _clamp(grade_failed_deployment(state))
 
-    # fallback (never return 0 or 1)
     return 0.5
